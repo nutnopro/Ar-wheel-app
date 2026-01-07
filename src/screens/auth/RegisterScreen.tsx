@@ -2,24 +2,48 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // 1. Import Icon
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/AppNavigator'; // Import Type
+
 import CustomInput from '../../components/CustomInput';
 import { COLORS } from '../../constants/colors';
 
+// กำหนด Type ให้ Navigation เพื่อความถูกต้อง
+type RegisterScreenProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
+
 const RegisterScreen = () => {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<RegisterScreenProp>();
   const [showPassword, setShowPassword] = useState(false);
-  const { control, handleSubmit, watch } = useForm();
+  const { control, handleSubmit } = useForm();
 
   const onRegisterPressed = (data: any) => {
     console.log('Register Data:', data);
-    // TODO: Send data to Backend (Register endpoint)
+    // TODO: Send data to Backend
     // ข้อมูล: username, password, email, phone, dob 
-    navigation.navigate('Login');
+    
+    // 2. แก้จาก 'Login' เป็น 'SignIn' ให้ตรงกับ AppNavigator
+    navigation.navigate('SignIn');
+  };
+
+  const onSignInPressed = () => {
+    // 3. แก้จาก 'Login' เป็น 'SignIn'
+    navigation.navigate('SignIn');
   };
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
+        
+        {/* --- ส่วนปุ่ม Back (เพิ่มใหม่) --- */}
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => navigation.goBack()} // สั่งให้ย้อนกลับไปหน้าก่อนหน้า
+        >
+          <Icon name="chevron-left" size={40} color={COLORS.primary} />
+        </TouchableOpacity>
+        {/* ----------------------------- */}
+
         <Text style={styles.title}>New Account</Text>
 
         <CustomInput
@@ -80,7 +104,7 @@ const RegisterScreen = () => {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity onPress={onSignInPressed}>
             <Text style={styles.linkText}>Sign in</Text>
           </TouchableOpacity>
         </View>
@@ -91,8 +115,22 @@ const RegisterScreen = () => {
 
 const styles = StyleSheet.create({
   scrollContainer: { flexGrow: 1, backgroundColor: COLORS.white },
-  container: { flex: 1, padding: 24, paddingTop: 60 },
-  title: { fontSize: 28, fontWeight: 'bold', color: COLORS.primary, textAlign: 'center', marginBottom: 30 },
+  container: { flex: 1, padding: 24, paddingTop: 20 }, // ปรับ paddingTop ลดลงนิดหน่อยเพราะมีปุ่ม Back แล้ว
+  
+  // Style สำหรับปุ่ม Back
+  backButton: {
+    alignSelf: 'flex-start', // ชิดซ้าย
+    marginLeft: -10,         // ขยับซ้ายให้พอดีขอบ
+    marginBottom: 10,        // เว้นระยะห่างจาก Title
+  },
+  
+  title: { 
+    fontSize: 28, 
+    fontWeight: 'bold', 
+    color: COLORS.primary, 
+    textAlign: 'center', 
+    marginBottom: 30 
+  },
   button: { backgroundColor: COLORS.primary, padding: 15, borderRadius: 30, alignItems: 'center', marginTop: 10, marginBottom: 20 },
   buttonText: { color: COLORS.white, fontWeight: 'bold', fontSize: 16 },
   footer: { flexDirection: 'row', justifyContent: 'center' },

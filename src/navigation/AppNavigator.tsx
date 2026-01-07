@@ -6,20 +6,21 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Imports
+import SplashScreen from '../screens/common/SplashScreen'; // อย่าลืมบรรทัดนี้
 import LoginScreen from '../screens/auth/LoginScreen'; 
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import { HomeScreen, ProfileScreen, ArScreen } from '../screens/user/MyTabs';
 
-// --- 1. เพิ่มส่วนนี้: กำหนด Type ของ Route ให้ชัดเจน ---
 export type RootStackParamList = {
+  Splash: undefined;
   SignIn: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  MainApp: undefined; // เรียก MainApp แล้วมันจะไปโผล่หน้าแรกของ Tab (คือ Home) เอง
+  MainApp: undefined;
 };
 
-const Stack = createNativeStackNavigator<RootStackParamList>(); // ใส่ Type ตรงนี้
+const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const COLORS = { 
@@ -30,12 +31,8 @@ const COLORS = {
   tabBarBg: '#EFF6FF'
 };
 
-// ... (ส่วนของ MainTabNavigator และ styles เหมือนเดิม ไม่ต้องแก้) ...
-// ผมขอละส่วน MainTabNavigator ไว้เพื่อความสั้นนะครับ ให้ใช้โค้ดเดิมที่คุณส่งมาได้เลย
-
 function MainTabNavigator() {
-  // ... ใช้โค้ดเดิมส่วน Tab ...
-   return (
+  return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
       <Tab.Navigator
         screenOptions={{
@@ -89,9 +86,7 @@ function MainTabNavigator() {
   );
 }
 
-// ... styles เหมือนเดิม ...
 const styles = StyleSheet.create({
-  // ... ก๊อปปี้ styles เดิมมาใส่ ...
   tabBarContainer: {
     position: 'absolute',
     bottom: 25,
@@ -122,8 +117,11 @@ const styles = StyleSheet.create({
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* ตรงนี้ชื่อต้องตรงกับที่ export type */}
+      {/* สำคัญ: ภายใน Stack.Navigator ห้ามมี Comment แทรกระหว่าง Screen เด็ดขาด 
+         เพราะจะทำให้เกิด Error "found ' '" 
+      */}
+      <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Splash" component={SplashScreen} />
         <Stack.Screen name="SignIn" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
