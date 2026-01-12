@@ -5,12 +5,31 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-// Imports
-import SplashScreen from '../screens/common/SplashScreen'; // อย่าลืมบรรทัดนี้
+// Import Providers
+import { ThemeProvider, useTheme } from '../context/ThemeContext'; // [UPDATED] import useTheme
+import { AuthProvider, useAuth } from '../context/AuthContext';
+import { LanguageProvider, useLanguage } from '../context/LanguageContext'; // [NEW]
+
+// Imports Screens
+import SplashScreen from '../screens/common/SplashScreen';
 import LoginScreen from '../screens/auth/LoginScreen'; 
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
-import { HomeScreen, ProfileScreen, ArScreen } from '../screens/user/MyTabs';
+import HomeScreen from '../screens/user/HomeScreen'; 
+import ProductDetailScreen from '../screens/user/ProductDetailScreen';
+import ArScreen from '../screens/user/ArScreen'; 
+import ProfileScreen from '../screens/user/ProfileScreen'; 
+import FavoritesScreen from '../screens/user/FavoritesScreen';
+import EditProfileScreen from '../screens/user/EditProfileScreen';
+import ChangePasswordScreen from '../screens/user/ChangePasswordScreen';
+import LanguageScreen from '../screens/user/LanguageScreen'; // [NEW]
+
+// Placeholder
+const PlaceholderScreen = ({ route }: any) => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <Text>{route.name}</Text>
+  </View>
+);
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -18,115 +37,140 @@ export type RootStackParamList = {
   Register: undefined;
   ForgotPassword: undefined;
   MainApp: undefined;
+  ProductDetail: { item: any };
+  Favorites: undefined;       
+  EditProfile: undefined;
+  ChangePassword: undefined; 
+  Language: undefined;       
+  ARPreferences: undefined;  
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
-const COLORS = { 
-  primary: '#2563EB',
-  white: '#FFFFFF', 
-  gray: '#64748B',
-  activeText: '#2563EB',
-  tabBarBg: '#EFF6FF'
+// [UPDATED] MainTabNavigator ต้องใช้ Hooks (useTheme, useLanguage) เพื่อเปลี่ยนสีและภาษา
+function MainTabNavigator() {
+  const { theme } = useTheme(); // ดึง Theme ปัจจุบัน
+  const { t } = useLanguage();  // ดึงคำแปลปัจจุบัน
+
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+        // ปรับสีพื้นหลัง Tab Bar ตาม Theme
+        tabBarStyle: [styles.tabBarContainer, { backgroundColor: theme.card, shadowColor: theme.text }], 
+      }}
+    >
+      <Tab.Screen 
+        name="Home" 
+        component={HomeScreen} 
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <View style={styles.iconContainer}>
+              <Icon name={focused ? "home" : "home-outline"} size={28} color={focused ? theme.icon : theme.subText} />
+              <Text style={[styles.label, { color: focused ? theme.icon : theme.subText }]}>{t.tab_home}</Text>
+            </View>
+          ),
+        }} 
+      />
+      
+      <Tab.Screen 
+        name="AR" 
+        component={ArScreen} 
+        options={{
+          tabBarStyle: { display: 'none' },
+          tabBarIcon: ({ focused }) => (
+            <View style={styles.arButtonWrapper}>
+               <View style={styles.diamondShape}>
+                   <View style={{ transform: [{ rotate: '-45deg' }] }}>
+                      <Icon name="cube-scan" size={30} color="white" />
+                   </View>
+               </View>
+               <Text style={styles.arLabel}>{t.tab_ar}</Text>
+            </View>
+          ),
+        }} 
+      />
+      
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileScreen} 
+        options={{
+          tabBarIcon: ({ focused }) => (
+             <View style={styles.iconContainer}>
+                <Icon name={focused ? "account" : "account-outline"} size={28} color={focused ? theme.icon : theme.subText} />
+                <Text style={[styles.label, { color: focused ? theme.icon : theme.subText }]}>{t.tab_profile}</Text>
+              </View>
+            ),
+        }} 
+      />
+    </Tab.Navigator>
+  );
+}
+
+// Navigation Wrapper
+const AppNavigationWrapper = () => {
+  const { userRole } = useAuth();
+  const { t } = useLanguage(); // ดึงคำแปลมาใช้กับ Header Title
+
+  return (
+    <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
+      {userRole === null ? (
+        <>
+          <Stack.Screen name="Splash" component={SplashScreen} />
+          <Stack.Screen name="SignIn" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="MainApp" component={MainTabNavigator} />
+          <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+          
+          {/* อัปเดต Title ให้เปลี่ยนภาษาได้ */}
+          <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ headerShown: true, title: t.menu_favorites, headerBackTitle: '' }} />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: true, title: 'Edit Profile', headerBackTitle: '' }} />
+          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: true, title: '', headerBackTitle: '', headerShadowVisible: false, headerStyle: { backgroundColor: 'transparent' } }} />
+          
+          <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: true, title: t.menu_language, headerBackTitle: '' }} />
+          <Stack.Screen name="ARPreferences" component={PlaceholderScreen} options={{ headerShown: true, title: t.menu_ar_pref, headerBackTitle: '' }} />
+        </>
+      )}
+    </Stack.Navigator>
+  );
 };
 
-function MainTabNavigator() {
+export default function AppNavigator() {
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarShowLabel: false,
-          tabBarStyle: styles.tabBarContainer, 
-        }}
-      >
-        <Tab.Screen 
-          name="Home" 
-          component={HomeScreen} 
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <View style={styles.iconContainer}>
-                <Icon name={focused ? "home" : "home-outline"} size={30} color={focused ? COLORS.primary : COLORS.gray} />
-                <Text style={[styles.label, { color: focused ? COLORS.activeText : COLORS.gray }]}>Home</Text>
-              </View>
-            ),
-          }} 
-        />
-        <Tab.Screen 
-          name="AR" 
-          component={ArScreen} 
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <View style={styles.arWrapper}>
-                <View style={styles.diamondShape}>
-                   <View style={{ transform: [{ rotate: '-45deg' }] }}>
-                      <Icon name="cube-scan" size={32} color="white" />
-                   </View>
-                </View>
-                <Text style={[styles.label, { color: COLORS.primary, marginTop: 45, fontWeight: 'bold' }]}>AR</Text>
-              </View>
-            ),
-          }} 
-        />
-        <Tab.Screen 
-          name="Profile" 
-          component={ProfileScreen} 
-          options={{
-            tabBarIcon: ({ focused }) => (
-               <View style={styles.iconContainer}>
-                <Icon name={focused ? "account" : "account-outline"} size={30} color={focused ? COLORS.primary : COLORS.gray} />
-                <Text style={[styles.label, { color: focused ? COLORS.activeText : COLORS.gray }]}>Profile</Text>
-              </View>
-            ),
-          }} 
-        />
-      </Tab.Navigator>
-    </View>
+    <AuthProvider>
+      <ThemeProvider>
+        {/* [NEW] เพิ่ม LanguageProvider เข้าไปตรงกลาง */}
+        <LanguageProvider>
+          <NavigationContainer>
+             <AppNavigationWrapper />
+          </NavigationContainer>
+        </LanguageProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 
 const styles = StyleSheet.create({
   tabBarContainer: {
-    position: 'absolute',
-    bottom: 25,
-    left: 20,
-    right: 20,
-    height: 80,
-    backgroundColor: COLORS.tabBarBg, 
-    borderRadius: 40,
-    borderTopWidth: 0,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    position: 'absolute', bottom: 20, left: 20, right: 20, height: 70, 
+    borderRadius: 35, borderTopWidth: 0,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.1, shadowRadius: 10, elevation: 5,
   },
-  iconContainer: { alignItems: 'center', justifyContent: 'center', height: '100%', top: 5 },
-  label: { fontSize: 12, fontWeight: '600', marginTop: 4, textAlign: 'center' },
-  arWrapper: { alignItems: 'center', justifyContent: 'center', top: -25, height: 100, width: 80 },
+  iconContainer: { alignItems: 'center', justifyContent: 'center', top: 0 },
+  label: { fontSize: 10, fontWeight: '600', marginTop: 4 },
+  arButtonWrapper: { alignItems: 'center', justifyContent: 'center', top: -20 },
   diamondShape: {
-    width: 60, height: 60, backgroundColor: COLORS.primary, borderRadius: 15,
-    justifyContent: 'center', alignItems: 'center', position: 'absolute', top: 0,
-    transform: [{ rotate: '45deg' }],
-    shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4, shadowRadius: 6, elevation: 8, borderWidth: 4, borderColor: COLORS.white, 
+    width: 56, height: 56, backgroundColor: '#2563EB', borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center', transform: [{ rotate: '45deg' }],
+    shadowColor: '#2563EB', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4, shadowRadius: 5, elevation: 8, borderWidth: 3, borderColor: '#FFFFFF', 
   },
+  arLabel: { color: '#2563EB', marginTop: 10, fontWeight: 'bold', fontSize: 11 }
 });
-
-export default function AppNavigator() {
-  return (
-    <NavigationContainer>
-      {/* สำคัญ: ภายใน Stack.Navigator ห้ามมี Comment แทรกระหว่าง Screen เด็ดขาด 
-         เพราะจะทำให้เกิด Error "found ' '" 
-      */}
-      <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Splash" component={SplashScreen} />
-        <Stack.Screen name="SignIn" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-        <Stack.Screen name="MainApp" component={MainTabNavigator} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
