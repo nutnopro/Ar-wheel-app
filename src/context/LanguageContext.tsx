@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext } from 'react';
 
 // 1. กำหนดคำแปล (Dictionary)
-// อยากแก้คำไหน หรือเพิ่มคำไหน มาแก้ที่นี่ได้เลยครับ
 const translations = {
   en: {
     // Tab Bar
@@ -36,6 +35,19 @@ const translations = {
     select_language: "Select Language",
     lang_thai: "Thai",
     lang_english: "English",
+
+    // [NEW] Admin Section
+    admin_dashboard: "Admin Dashboard",
+    manage_users: "Manage Users",
+    manage_stores: "Manage Stores",
+    manage_models: "Manage Models",
+    manage_categories: "Manage Categories",
+    system_logs: "System Logs",
+    add_new: "Add New",
+    action_edit: "Edit",
+    action_delete: "Delete",
+    confirm_delete: "Are you sure you want to delete?",
+    cancel: "Cancel",
   },
   th: {
     // Tab Bar
@@ -70,6 +82,19 @@ const translations = {
     select_language: "เลือกภาษา",
     lang_thai: "ภาษาไทย",
     lang_english: "ภาษาอังกฤษ",
+
+    // [NEW] Admin Section
+    admin_dashboard: "แดชบอร์ดผู้ดูแล",
+    manage_users: "จัดการผู้ใช้งาน",
+    manage_stores: "จัดการร้านค้า",
+    manage_models: "จัดการรุ่นโมเดล",
+    manage_categories: "จัดการหมวดหมู่",
+    system_logs: "บันทึกระบบ",
+    add_new: "เพิ่มรายการใหม่",
+    action_edit: "แก้ไข",
+    action_delete: "ลบ",
+    confirm_delete: "คุณแน่ใจหรือไม่ที่จะลบ?",
+    cancel: "ยกเลิก",
   }
 };
 
@@ -77,15 +102,12 @@ const translations = {
 const LanguageContext = createContext<any>(null);
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-  // ค่าเริ่มต้นเป็นภาษาอังกฤษ ('en')
   const [language, setLanguage] = useState<'en' | 'th'>('en');
 
-  // ฟังก์ชันสลับภาษา
   const changeLanguage = (lang: 'en' | 'th') => {
     setLanguage(lang);
   };
 
-  // ดึงคำแปลตามภาษาปัจจุบัน
   const t = translations[language];
 
   return (

@@ -6,11 +6,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 // Import Providers
-import { ThemeProvider, useTheme } from '../context/ThemeContext'; // [UPDATED] import useTheme
+import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import { LanguageProvider, useLanguage } from '../context/LanguageContext'; // [NEW]
+import { LanguageProvider, useLanguage } from '../context/LanguageContext';
 
-// Imports Screens
+// Imports Screens (User)
 import SplashScreen from '../screens/common/SplashScreen';
 import LoginScreen from '../screens/auth/LoginScreen'; 
 import RegisterScreen from '../screens/auth/RegisterScreen';
@@ -22,7 +22,15 @@ import ProfileScreen from '../screens/user/ProfileScreen';
 import FavoritesScreen from '../screens/user/FavoritesScreen';
 import EditProfileScreen from '../screens/user/EditProfileScreen';
 import ChangePasswordScreen from '../screens/user/ChangePasswordScreen';
-import LanguageScreen from '../screens/user/LanguageScreen'; // [NEW]
+import LanguageScreen from '../screens/user/LanguageScreen';
+
+// [NEW] Imports Screens (Admin)
+import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
+import ManageUsersScreen from '../screens/admin/ManageUsersScreen';
+// สำหรับ Store/Models/Cat เราใช้ไฟล์ ManageUsers เป็น Template ไปก่อน (หรือสร้างไฟล์จริงตามที่ผมแนะนำข้างบน)
+import ManageStoresScreen from '../screens/admin/ManageUsersScreen'; 
+import SystemLogsScreen from '../screens/admin/SystemLogsScreen';
+
 
 // Placeholder
 const PlaceholderScreen = ({ route }: any) => (
@@ -43,22 +51,29 @@ export type RootStackParamList = {
   ChangePassword: undefined; 
   Language: undefined;       
   ARPreferences: undefined;  
+  // Admin
+  AdminApp: undefined;
+  ManageUsers: undefined;
+  ManageStores: undefined;
+  ManageModels: undefined;
+  ManageCategories: undefined;
+  SystemLogs: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
+const AdminStack = createNativeStackNavigator();
 
-// [UPDATED] MainTabNavigator ต้องใช้ Hooks (useTheme, useLanguage) เพื่อเปลี่ยนสีและภาษา
+// --- Main Tab Navigator (User) ---
 function MainTabNavigator() {
-  const { theme } = useTheme(); // ดึง Theme ปัจจุบัน
-  const { t } = useLanguage();  // ดึงคำแปลปัจจุบัน
+  const { theme } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        // ปรับสีพื้นหลัง Tab Bar ตาม Theme
         tabBarStyle: [styles.tabBarContainer, { backgroundColor: theme.card, shadowColor: theme.text }], 
       }}
     >
@@ -74,7 +89,6 @@ function MainTabNavigator() {
           ),
         }} 
       />
-      
       <Tab.Screen 
         name="AR" 
         component={ArScreen} 
@@ -92,7 +106,6 @@ function MainTabNavigator() {
           ),
         }} 
       />
-      
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen} 
@@ -101,7 +114,7 @@ function MainTabNavigator() {
              <View style={styles.iconContainer}>
                 <Icon name={focused ? "account" : "account-outline"} size={28} color={focused ? theme.icon : theme.subText} />
                 <Text style={[styles.label, { color: focused ? theme.icon : theme.subText }]}>{t.tab_profile}</Text>
-              </View>
+             </View>
             ),
         }} 
       />
@@ -109,30 +122,56 @@ function MainTabNavigator() {
   );
 }
 
-// Navigation Wrapper
+// --- Admin Stack Navigator (Admin) [NEW] ---
+const AdminNavigator = () => {
+  const { theme } = useTheme();
+  const { t } = useLanguage();
+  return (
+    <AdminStack.Navigator
+        screenOptions={{
+            headerStyle: { backgroundColor: theme.card },
+            headerTintColor: theme.text,
+            headerTitleStyle: { fontWeight: 'bold' },
+            contentStyle: { backgroundColor: theme.background }
+        }}
+    >
+        <AdminStack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ headerShown: false }} />
+        <AdminStack.Screen name="ManageUsers" component={ManageUsersScreen} options={{ title: t.manage_users }} />
+        <AdminStack.Screen name="ManageStores" component={ManageStoresScreen} options={{ title: t.manage_stores }} /> 
+        {/* Placeholder Reuse for now */}
+        <AdminStack.Screen name="ManageModels" component={ManageStoresScreen} options={{ title: t.manage_models }} />
+        <AdminStack.Screen name="ManageCategories" component={ManageStoresScreen} options={{ title: t.manage_categories }} />
+        <AdminStack.Screen name="SystemLogs" component={SystemLogsScreen} options={{ title: t.system_logs }} />
+    </AdminStack.Navigator>
+  );
+}
+
+// --- App Navigation Wrapper ---
 const AppNavigationWrapper = () => {
   const { userRole } = useAuth();
-  const { t } = useLanguage(); // ดึงคำแปลมาใช้กับ Header Title
+  const { t } = useLanguage();
 
   return (
     <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
       {userRole === null ? (
+        // --- Auth Group ---
         <>
           <Stack.Screen name="Splash" component={SplashScreen} />
           <Stack.Screen name="SignIn" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         </>
+      ) : userRole === 'admin' ? (
+        // --- Admin Group [NEW] ---
+        <Stack.Screen name="AdminApp" component={AdminNavigator} />
       ) : (
+        // --- User/Visitor Group ---
         <>
           <Stack.Screen name="MainApp" component={MainTabNavigator} />
           <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
-          
-          {/* อัปเดต Title ให้เปลี่ยนภาษาได้ */}
           <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ headerShown: true, title: t.menu_favorites, headerBackTitle: '' }} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: true, title: 'Edit Profile', headerBackTitle: '' }} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: true, title: '', headerBackTitle: '', headerShadowVisible: false, headerStyle: { backgroundColor: 'transparent' } }} />
-          
           <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: true, title: t.menu_language, headerBackTitle: '' }} />
           <Stack.Screen name="ARPreferences" component={PlaceholderScreen} options={{ headerShown: true, title: t.menu_ar_pref, headerBackTitle: '' }} />
         </>
@@ -145,7 +184,6 @@ export default function AppNavigator() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        {/* [NEW] เพิ่ม LanguageProvider เข้าไปตรงกลาง */}
         <LanguageProvider>
           <NavigationContainer>
              <AppNavigationWrapper />
