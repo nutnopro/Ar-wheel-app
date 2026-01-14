@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -10,7 +10,7 @@ import { ThemeProvider, useTheme } from '../context/ThemeContext';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 import { LanguageProvider, useLanguage } from '../context/LanguageContext';
 
-// Imports Screens (User)
+// Import Screens (User)
 import SplashScreen from '../screens/common/SplashScreen';
 import LoginScreen from '../screens/auth/LoginScreen'; 
 import RegisterScreen from '../screens/auth/RegisterScreen';
@@ -24,20 +24,24 @@ import EditProfileScreen from '../screens/user/EditProfileScreen';
 import ChangePasswordScreen from '../screens/user/ChangePasswordScreen';
 import LanguageScreen from '../screens/user/LanguageScreen';
 
-// [NEW] Imports Screens (Admin)
-import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
+// Import Screens (Admin) - ไฟล์จริง
 import ManageUsersScreen from '../screens/admin/ManageUsersScreen';
-// สำหรับ Store/Models/Cat เราใช้ไฟล์ ManageUsers เป็น Template ไปก่อน (หรือสร้างไฟล์จริงตามที่ผมแนะนำข้างบน)
-import ManageStoresScreen from '../screens/admin/ManageUsersScreen'; 
+import ManageStoresScreen from '../screens/admin/ManageStoresScreen';
+import ManageCategoriesScreen from '../screens/admin/ManageCategoriesScreen';
+import ManageModelsScreen from '../screens/admin/ManageModelsScreen';
 import SystemLogsScreen from '../screens/admin/SystemLogsScreen';
 
-
-// Placeholder
-const PlaceholderScreen = ({ route }: any) => (
-  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-    <Text>{route.name}</Text>
-  </View>
-);
+// Placeholder (เผื่อไว้)
+const PlaceholderScreen = ({ route }: any) => {
+  const { theme } = useTheme();
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
+      <Icon name="tools" size={50} color={theme.subText} />
+      <Text style={{ fontSize: 18, fontWeight: 'bold', color: theme.text, marginTop: 10 }}>{route.name}</Text>
+      <Text style={{ color: theme.subText, marginTop: 5 }}>Feature coming soon</Text>
+    </View>
+  );
+};
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -51,8 +55,8 @@ export type RootStackParamList = {
   ChangePassword: undefined; 
   Language: undefined;       
   ARPreferences: undefined;  
-  // Admin
-  AdminApp: undefined;
+  
+  // Admin Routes
   ManageUsers: undefined;
   ManageStores: undefined;
   ManageModels: undefined;
@@ -62,9 +66,8 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
-const AdminStack = createNativeStackNavigator();
 
-// --- Main Tab Navigator (User) ---
+// --- Main Tab Navigator ---
 function MainTabNavigator() {
   const { theme } = useTheme();
   const { t } = useLanguage();
@@ -94,7 +97,7 @@ function MainTabNavigator() {
         component={ArScreen} 
         options={{
           tabBarStyle: { display: 'none' },
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: () => (
             <View style={styles.arButtonWrapper}>
                <View style={styles.diamondShape}>
                    <View style={{ transform: [{ rotate: '-45deg' }] }}>
@@ -122,34 +125,32 @@ function MainTabNavigator() {
   );
 }
 
-// --- Admin Stack Navigator (Admin) [NEW] ---
-const AdminNavigator = () => {
-  const { theme } = useTheme();
-  const { t } = useLanguage();
-  return (
-    <AdminStack.Navigator
-        screenOptions={{
-            headerStyle: { backgroundColor: theme.card },
-            headerTintColor: theme.text,
-            headerTitleStyle: { fontWeight: 'bold' },
-            contentStyle: { backgroundColor: theme.background }
-        }}
-    >
-        <AdminStack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ headerShown: false }} />
-        <AdminStack.Screen name="ManageUsers" component={ManageUsersScreen} options={{ title: t.manage_users }} />
-        <AdminStack.Screen name="ManageStores" component={ManageStoresScreen} options={{ title: t.manage_stores }} /> 
-        {/* Placeholder Reuse for now */}
-        <AdminStack.Screen name="ManageModels" component={ManageStoresScreen} options={{ title: t.manage_models }} />
-        <AdminStack.Screen name="ManageCategories" component={ManageStoresScreen} options={{ title: t.manage_categories }} />
-        <AdminStack.Screen name="SystemLogs" component={SystemLogsScreen} options={{ title: t.system_logs }} />
-    </AdminStack.Navigator>
-  );
-}
-
 // --- App Navigation Wrapper ---
 const AppNavigationWrapper = () => {
   const { userRole } = useAuth();
   const { t } = useLanguage();
+  const { theme } = useTheme();
+
+  // Helper สร้างปุ่ม Back
+  const renderBackButton = (navigation: any) => (
+    <TouchableOpacity 
+      onPress={() => navigation.goBack()} 
+      style={{ paddingRight: 15, paddingVertical: 5 }}
+    >
+      <Icon name="arrow-left" size={24} color={theme.text} />
+    </TouchableOpacity>
+  );
+
+  // Helper Options สำหรับหน้า Admin (เปิด Header + ปุ่ม Back)
+  const adminSubPageOptions = ({ navigation, route }: any) => ({
+    headerShown: true,
+    title: route.name.replace(/([A-Z])/g, ' $1').trim(), // ManageUsers -> Manage Users
+    headerStyle: { backgroundColor: theme.card },
+    headerTintColor: theme.text,
+    headerTitleStyle: { fontWeight: 'bold' as const },
+    headerLeft: () => renderBackButton(navigation),
+    headerShadowVisible: false,
+  });
 
   return (
     <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
@@ -161,19 +162,25 @@ const AppNavigationWrapper = () => {
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         </>
-      ) : userRole === 'admin' ? (
-        // --- Admin Group [NEW] ---
-        <Stack.Screen name="AdminApp" component={AdminNavigator} />
       ) : (
-        // --- User/Visitor Group ---
+        // --- Logged In Group ---
         <>
           <Stack.Screen name="MainApp" component={MainTabNavigator} />
+          
+          {/* User Screens */}
           <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
-          <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ headerShown: true, title: t.menu_favorites, headerBackTitle: '' }} />
-          <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: true, title: 'Edit Profile', headerBackTitle: '' }} />
-          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: true, title: '', headerBackTitle: '', headerShadowVisible: false, headerStyle: { backgroundColor: 'transparent' } }} />
-          <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: true, title: t.menu_language, headerBackTitle: '' }} />
-          <Stack.Screen name="ARPreferences" component={PlaceholderScreen} options={{ headerShown: true, title: t.menu_ar_pref, headerBackTitle: '' }} />
+          <Stack.Screen name="Favorites" component={FavoritesScreen} options={{ headerShown: true, title: t.menu_favorites, headerStyle: { backgroundColor: theme.card }, headerTintColor: theme.text }} />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: true, title: 'Edit Profile', headerStyle: { backgroundColor: theme.card }, headerTintColor: theme.text }} />
+          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: true, title: '', headerStyle: { backgroundColor: theme.background }, headerTintColor: theme.text, headerShadowVisible: false }} />
+          <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: true, title: t.menu_language, headerStyle: { backgroundColor: theme.card }, headerTintColor: theme.text }} />
+          <Stack.Screen name="ARPreferences" component={PlaceholderScreen} options={{ headerShown: true, title: t.menu_ar_pref, headerStyle: { backgroundColor: theme.card }, headerTintColor: theme.text }} />
+
+          {/* --- ADMIN Screens --- */}
+          <Stack.Screen name="ManageUsers" component={ManageUsersScreen} options={adminSubPageOptions} />
+          <Stack.Screen name="ManageStores" component={ManageStoresScreen} options={adminSubPageOptions} />
+          <Stack.Screen name="ManageCategories" component={ManageCategoriesScreen} options={adminSubPageOptions} />
+          <Stack.Screen name="ManageModels" component={ManageModelsScreen} options={adminSubPageOptions} />
+          <Stack.Screen name="SystemLogs" component={SystemLogsScreen} options={adminSubPageOptions} />
         </>
       )}
     </Stack.Navigator>
@@ -185,9 +192,9 @@ export default function AppNavigator() {
     <AuthProvider>
       <ThemeProvider>
         <LanguageProvider>
-          <NavigationContainer>
+           <NavigationContainer>
              <AppNavigationWrapper />
-          </NavigationContainer>
+           </NavigationContainer>
         </LanguageProvider>
       </ThemeProvider>
     </AuthProvider>
