@@ -1,18 +1,21 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Alert } from 'react-native';
+import { authService } from '../services/authService'; // เรียก service
+import { 
+  setToken, getToken, removeToken, 
+  setUserData as setStorageUser, getUserData, removeUserData 
+} from '../utils/storage'; // เรียก MMKV storage
 
-// 1. กำหนด Role ให้ครบ (รวม visitor) เพื่อไม่ให้ error type mismatch
 export type UserRole = 'visitor' | 'user' | 'admin' | null;
 
-// 2. กำหนด Type ให้ครบตามที่หน้า Profile/EditProfile ต้องการ
 interface AuthContextType {
   userRole: UserRole;
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<void>;
   loginAsVisitor: () => void;
   logout: () => void;
-  userData: any | null;             // จำเป็นสำหรับหน้า Profile
-  updateProfile: (newData: any) => void; // จำเป็นสำหรับหน้า EditProfile
+  userData: any | null;
+  updateProfile: (newData: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -22,33 +25,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userData, setUserData] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ฟังก์ชัน Login ที่รองรับ Admin
-  const login = async (email: string, pass: string) => {
-    setIsLoading(true);
-    
-    // Simulate API Call
-    setTimeout(() => {
-      // --- LOGIC การแยก USER / ADMIN ---
-      if (email.toLowerCase() === 'admin@test.com' && pass === '123456') {
-        setUserRole('admin');
-        setUserData({ 
-            name: 'Admin User', 
-            email: 'admin@test.com',
-            role: 'Administrator'
-        });
-      } else if (email.toLowerCase() === 'user@test.com' && pass === '123456') {
-        setUserRole('user');
-        setUserData({ 
-          name: 'Alex Sander', 
-          email: 'user@test.com', 
-          phone: '+66 81 234 5678',
-          avatar: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&h=400&fit=crop' 
-        });
-      } else {
-        Alert.alert('Login Failed', 'Invalid email or password');
+  // 1. ตรวจสอบ Session เก่าตอนเปิดแอป (Auto Login)
+  useEffect(() => {
+    const checkLogin = () => {
+      const token = getToken();
+      const savedUser = getUserData();
+      if (token && savedUser) {
+        setUserData(savedUser);
+        // เช็คว่า backend ส่ง role มาไหม ถ้าไม่มีให้ default เป็น user
+        setUserRole(savedUser.role || 'user'); 
       }
+    };
+    checkLogin();
+  }, []);
+
+  // 2. ฟังก์ชัน Login จริง
+  const login = async (emailOrUser: string, pass: string) => {
+    setIsLoading(true);
+    try {
+      // เรียก API ผ่าน Service
+      const response = await authService.login(emailOrUser, pass);
+      
+      // สมมติโครงสร้างตามที่คุยกัน { access_token, user }
+      const { access_token, user } = response.data;
+
+      if (access_token) {
+        // บันทึกลงเครื่อง
+        setToken(access_token);
+        setStorageUser(user);
+
+        // อัปเดต State
+        setUserData(user);
+        setUserRole(user.role || 'user'); // ถ้า admin จะได้ role: 'admin'
+      } else {
+        throw new Error('No access token received');
+      }
+
+    } catch (error: any) {
+      console.error('Login Error:', error);
+      const msg = error.response?.data?.message || 'Invalid email or password';
+      Alert.alert('Login Failed', msg);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const loginAsVisitor = () => {
@@ -61,13 +80,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
+    // ลบข้อมูลออกจากเครื่องและ State
+    removeToken();
+    removeUserData();
     setUserRole(null);
     setUserData(null);
   };
 
-  // ฟังก์ชันอัปเดตข้อมูล (เพื่อให้หน้า EditProfile ไม่ error)
   const updateProfile = (newData: any) => {
-    setUserData((prev: any) => ({ ...prev, ...newData }));
+    setUserData((prev: any) => {
+      const updated = { ...prev, ...newData };
+      setStorageUser(updated); // อัปเดตลงเครื่องด้วย
+      return updated;
+    });
   };
 
   return (

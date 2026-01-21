@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "66865019032",
+    "project_id": "ar-custom-car-alloy-wheels",
+    "storage_bucket": "ar-custom-car-alloy-wheels.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:66865019032:android:5b83c7cb1cb1ecd4c178ed",
+        "android_client_info": {
+          "package_name": "com.arwheelfrontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMg7sXcf1ImioulVJvk4FdgrMDnzwv_yM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
