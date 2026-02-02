@@ -1,24 +1,23 @@
 import axios from 'axios';
-// ⚠️ ตรวจสอบว่าไฟล์ storage.ts ของคุณอยู่ที่ path นี้จริงหรือไม่
-// ถ้าไม่มี ให้สร้างไฟล์นี้เพื่อดึง token จาก MMKV หรือ AsyncStorage
+// ตรวจสอบ path ของ storage ให้ถูกต้อง (ถ้าแดงให้แก้ path ให้ถูก)
 import { getToken } from '../utils/storage'; 
 
 const api = axios.create({
-  // ✅ Base URL หลัก (ไม่ต้องมี /api หรือ /Auth ต่อท้ายตรงนี้)
-  baseURL: 'https://ar-alloy-api.onrender.com', 
-  timeout: 60000, // รอสูงสุด 60 วินาที (เผื่อเน็ตช้า)
+  // ✅ ใช้ IP Address ของคุณตรงนี้ครับ
+  baseURL: 'http://192.168.0.8:3000', 
+  
+  timeout: 60000, // 60 วินาที
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// ✅ Interceptor: แอบยัด Token ใส่กระเป๋า (Header) ไปทุกครั้งก่อนส่ง
+// Interceptor: แอบใส่ Token ไปใน Header ทุกครั้ง (ถ้ามี)
 api.interceptors.request.use(
   async (config) => {
     try {
-      const token = getToken(); // ดึง Token จากเครื่อง
+      const token = await getToken(); // ใส่ await เผื่อ getToken เป็น async
       if (token) {
-        // ถ้ามี Token ให้แนบไปใน Header ชื่อ Authorization
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {

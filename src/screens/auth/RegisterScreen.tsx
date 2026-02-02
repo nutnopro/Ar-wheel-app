@@ -1,33 +1,68 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useForm } from 'react-hook-form';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // 1. Import Icon
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../navigation/AppNavigator'; // Import Type
+import { RootStackParamList } from '../../navigation/AppNavigator';
 
 import CustomInput from '../../components/CustomInput';
 import { COLORS } from '../../constants/colors';
 
-// กำหนด Type ให้ Navigation เพื่อความถูกต้อง
+// ✅ 1. Import Service เพื่อใช้ยิง API
+import { authService } from '../../services/authService';
+
 type RegisterScreenProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
 
 const RegisterScreen = () => {
   const navigation = useNavigation<RegisterScreenProp>();
   const [showPassword, setShowPassword] = useState(false);
+  
+  // เพิ่ม loading state เผื่อตอนเน็ตช้าหรือ Server ประมวลผล
+  const [isLoading, setIsLoading] = useState(false);
+
   const { control, handleSubmit } = useForm();
 
-  const onRegisterPressed = (data: any) => {
-    console.log('Register Data:', data);
-    // TODO: Send data to Backend
-    // ข้อมูล: username, password, email, phone, dob 
-    
-    // 2. แก้จาก 'Login' เป็น 'SignIn' ให้ตรงกับ AppNavigator
-    navigation.navigate('SignIn');
+  // ✅ 2. ฟังก์ชันสมัครสมาชิกที่เชื่อมต่อ Backend แล้ว
+  const onRegisterPressed = async (data: any) => {
+    if (isLoading) return; // ป้องกันการกดรัวๆ
+
+    setIsLoading(true);
+    try {
+      console.log('📝 Raw Form Data:', data);
+
+      // 🛠️ แปลงข้อมูล (Mapping) ให้ตรงกับที่ Backend ต้องการ
+      // Form เราใช้ชื่อ 'dob' แต่ Backend น่าจะรอรับ 'dateOfBirth'
+      const newUser = {
+        username: data.username,
+        password: data.password,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        dateOfBirth: data.dob, // 👈 ส่งค่า dob ไปในชื่อ dateOfBirth
+      };
+
+      console.log('🚀 Sending Registration to Backend:', newUser);
+
+      // ยิง API ไปที่ NestJS
+      await authService.register(newUser);
+
+      // ถ้าไม่มี Error เด้ง แสดงว่าสมัครสำเร็จ
+      Alert.alert("Success", "Account created successfully!", [
+        { text: "OK", onPress: () => navigation.navigate('SignIn') }
+      ]);
+
+    } catch (error: any) {
+      console.error("Register Error:", error);
+      
+      // ดึงข้อความ Error จาก Backend มาแสดง (ถ้ามี)
+      const errorMessage = error.response?.data?.message || "Registration failed. Please try again.";
+      Alert.alert("Registration Failed", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const onSignInPressed = () => {
-    // 3. แก้จาก 'Login' เป็น 'SignIn'
     navigation.navigate('SignIn');
   };
 
@@ -35,14 +70,13 @@ const RegisterScreen = () => {
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
         
-        {/* --- ส่วนปุ่ม Back (เพิ่มใหม่) --- */}
+        {/* --- ปุ่ม Back --- */}
         <TouchableOpacity 
           style={styles.backButton} 
-          onPress={() => navigation.goBack()} // สั่งให้ย้อนกลับไปหน้าก่อนหน้า
+          onPress={() => navigation.goBack()}
         >
           <Icon name="chevron-left" size={40} color={COLORS.primary} />
         </TouchableOpacity>
-        {/* ----------------------------- */}
 
         <Text style={styles.title}>New Account</Text>
 
@@ -90,7 +124,7 @@ const RegisterScreen = () => {
         <CustomInput
           name="dob"
           label="Date Of Birth"
-          placeholder="DD / MM / YYYY"
+          placeholder="DD/MM/YYYY"
           control={control}
           rules={{ 
             required: 'Date of Birth is required',
@@ -98,8 +132,15 @@ const RegisterScreen = () => {
           }}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit(onRegisterPressed)}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+        {/* ปุ่ม Sign Up */}
+        <TouchableOpacity 
+            style={[styles.button, isLoading && { opacity: 0.7 }]} 
+            onPress={handleSubmit(onRegisterPressed)}
+            disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? "Signing up..." : "Sign Up"}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>
@@ -115,15 +156,12 @@ const RegisterScreen = () => {
 
 const styles = StyleSheet.create({
   scrollContainer: { flexGrow: 1, backgroundColor: COLORS.white },
-  container: { flex: 1, padding: 24, paddingTop: 20 }, // ปรับ paddingTop ลดลงนิดหน่อยเพราะมีปุ่ม Back แล้ว
-  
-  // Style สำหรับปุ่ม Back
+  container: { flex: 1, padding: 24, paddingTop: 20 },
   backButton: {
-    alignSelf: 'flex-start', // ชิดซ้าย
-    marginLeft: -10,         // ขยับซ้ายให้พอดีขอบ
-    marginBottom: 10,        // เว้นระยะห่างจาก Title
+    alignSelf: 'flex-start',
+    marginLeft: -10,
+    marginBottom: 10,
   },
-  
   title: { 
     fontSize: 28, 
     fontWeight: 'bold', 
