@@ -68,10 +68,11 @@ const LoginScreen = () => {
             
             <View style={styles.header}>
               <View style={styles.logoBox}>
-                 <Icon name="cube-scan" size={50} color="#2563EB" />
+                 {/* Logo ล้อรถให้ตรงกับ Splash */}
+                 <Icon name="steering" size={50} color="#2563EB" />
               </View>
               <Text style={styles.title}>Welcome Back!</Text>
-              <Text style={styles.subtitle}>Sign in to continue to AR Wheel</Text>
+              <Text style={styles.subtitle}>Sign in to continue to Wheel AR</Text>
             </View>
 
             <View style={styles.form}>

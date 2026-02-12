@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
@@ -16,6 +16,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 
+import Header from '../../components/Header';
+
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
@@ -24,7 +26,7 @@ const ChangePasswordScreen = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   // State สำหรับควบคุมการมองเห็นรหัสผ่าน (แยกกันแต่ละช่อง)
   const [showCurrentPass, setShowCurrentPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
@@ -59,19 +61,19 @@ const ChangePasswordScreen = () => {
   };
 
   // Component ย่อยสำหรับสร้างช่อง Input รหัสผ่าน
-  const PasswordInput = ({ 
-    label, 
-    value, 
-    onChangeText, 
-    showPass, 
-    toggleShowPass, 
-    placeholder 
+  const PasswordInput = ({
+    label,
+    value,
+    onChangeText,
+    showPass,
+    toggleShowPass,
+    placeholder
   }: any) => (
     <View style={styles.inputGroup}>
       <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
       <View style={[styles.inputContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Icon name="lock-outline" size={20} color={theme.subText} style={styles.inputIcon} />
-        
+
         <TextInput
           style={[styles.input, { color: theme.text }]}
           value={value}
@@ -81,13 +83,13 @@ const ChangePasswordScreen = () => {
           secureTextEntry={!showPass} // ถ้า showPass=false ให้ซ่อนรหัส
           autoCapitalize="none"
         />
-        
+
         {/* ปุ่มดวงตา */}
         <TouchableOpacity onPress={toggleShowPass} style={styles.eyeButton}>
-          <Icon 
-            name={showPass ? "eye-off-outline" : "eye-outline"} 
-            size={22} 
-            color={theme.subText} 
+          <Icon
+            name={showPass ? "eye-off-outline" : "eye-outline"}
+            size={22}
+            color={theme.subText}
           />
         </TouchableOpacity>
       </View>
@@ -95,22 +97,23 @@ const ChangePasswordScreen = () => {
   );
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={[styles.container, { backgroundColor: theme.background }]}
     >
+      <Header title="Change Password" />
       <ScrollView contentContainerStyle={styles.content}>
-        
+
         <View style={styles.headerIconContainer}>
-             <View style={styles.iconCircle}>
-                <Icon name="lock-reset" size={40} color="#2563EB" />
-             </View>
-             <Text style={[styles.headerTitle, { color: theme.text }]}>Create New Password</Text>
-             <Text style={styles.headerSubtitle}>Your new password must be different from previous used passwords.</Text>
+          <View style={styles.iconCircle}>
+            <Icon name="lock-reset" size={40} color="#2563EB" />
+          </View>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>Create New Password</Text>
+          <Text style={styles.headerSubtitle}>Your new password must be different from previous used passwords.</Text>
         </View>
 
         <View style={styles.form}>
-          <PasswordInput 
+          <PasswordInput
             label="Current Password"
             value={currentPassword}
             onChangeText={setCurrentPassword}
@@ -119,7 +122,7 @@ const ChangePasswordScreen = () => {
             placeholder="Enter current password"
           />
 
-          <PasswordInput 
+          <PasswordInput
             label="New Password"
             value={newPassword}
             onChangeText={setNewPassword}
@@ -128,7 +131,7 @@ const ChangePasswordScreen = () => {
             placeholder="Enter new password"
           />
 
-          <PasswordInput 
+          <PasswordInput
             label="Confirm New Password"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
@@ -138,8 +141,8 @@ const ChangePasswordScreen = () => {
           />
         </View>
 
-        <TouchableOpacity 
-          style={styles.saveButton} 
+        <TouchableOpacity
+          style={styles.saveButton}
           onPress={handleSave}
           disabled={saving}
         >
@@ -158,11 +161,11 @@ const ChangePasswordScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { padding: 24 },
-  
+
   headerIconContainer: { alignItems: 'center', marginBottom: 30, marginTop: 10 },
   iconCircle: {
-      width: 80, height: 80, borderRadius: 40, backgroundColor: '#EFF6FF',
-      justifyContent: 'center', alignItems: 'center', marginBottom: 16
+    width: 80, height: 80, borderRadius: 40, backgroundColor: '#EFF6FF',
+    justifyContent: 'center', alignItems: 'center', marginBottom: 16
   },
   headerTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 8 },
   headerSubtitle: { fontSize: 14, color: '#94A3B8', textAlign: 'center', paddingHorizontal: 20, lineHeight: 20 },
@@ -170,7 +173,7 @@ const styles = StyleSheet.create({
   form: { marginBottom: 20 },
   inputGroup: { marginBottom: 20 },
   label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginLeft: 4 },
-  
+
   // Style ของ Input ที่มี icon ซ้ายขวา
   inputContainer: {
     flexDirection: 'row', alignItems: 'center',

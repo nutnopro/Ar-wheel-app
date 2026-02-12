@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, StatusBar, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
@@ -10,20 +10,29 @@ const ProductDetailScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="chevron-left" size={32} color="#2563EB" />
-        </TouchableOpacity>
-      </View>
+      <StatusBar
+        barStyle="dark-content"
+        translucent
+        backgroundColor="transparent"
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* ส่วนแสดงรูปโมเดลล้อ + ปุ่ม Back ซ้ายบนซ้อนทับเหมือนดีไซน์ */}
         <View style={styles.imageWrapper}>
           <Image source={{ uri: item.image }} style={styles.image} resizeMode="contain" />
+
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backBtnOverlay}
+            activeOpacity={0.8}
+          >
+            <Icon name="chevron-left" size={28} color="#2563EB" />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.detailsContainer}>
           <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.price}>{item.price.toLocaleString()}</Text>
+          <Text style={styles.price}>${item.price.toLocaleString()}</Text>
           
           <Text style={styles.description}>
             The legendary {item.name}. High performance forged wheel designed for racing and street use. 
@@ -34,12 +43,10 @@ const ProductDetailScreen = () => {
 
       {/* --- Footer Buttons --- */}
       <View style={styles.footer}>
-        {/* ปุ่ม Try on AR: แก้ไข Navigation ตรงนี้ */}
         <TouchableOpacity 
           style={styles.arButton} 
           activeOpacity={0.8}
           onPress={() => {
-            // สั่งให้ไปที่ Navigator หลัก (MainApp) -> แล้วไปที่ Tab ชื่อ 'AR' -> พร้อมส่ง params
             navigation.navigate('MainApp', { 
               screen: 'AR', 
               params: { item: item } 
@@ -60,14 +67,28 @@ const ProductDetailScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
-  header: { padding: 16 },
-  backBtn: { width: 40, height: 40, justifyContent: 'center' },
-  scrollContent: { paddingBottom: 100 },
+  scrollContent: { paddingBottom: 120 },
   imageWrapper: { 
-    height: 300, justifyContent: 'center', alignItems: 'center', 
-    backgroundColor: '#E2E8F0', borderRadius: 20, margin: 20 
+    height: 320,
+    margin: 20,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
   },
   image: { width: '80%', height: '80%' },
+  backBtnOverlay: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 24 : 16,
+    left: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   detailsContainer: { paddingHorizontal: 24 },
   name: { fontSize: 24, fontWeight: 'bold', color: '#1E293B', marginBottom: 8 },
   price: { fontSize: 20, fontWeight: '600', color: '#2563EB', marginBottom: 16 },

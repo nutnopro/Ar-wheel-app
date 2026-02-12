@@ -23,13 +23,28 @@ const HomeScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterVisible, setFilterVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedBrand, setSelectedBrand] = useState('All');
   const [selectedSize, setSelectedSize] = useState('All');
+  const [minPrice, setMinPrice] = useState('0');
+  const [maxPrice, setMaxPrice] = useState('999');
 
-  const categories = [t.all_category, 'Sport', 'Luxury', 'Minimal', 'Classic', 'Off-road']; // ใช้คำแปล 'All'
-  const sizes = [t.all_category, '17"', '18"', '19"', '20"', '21"', '22"'];
+  const categories = ['All', 'Sport', 'Luxury', 'Minimal', 'Classic', 'Off-road'];
+  const brands = ['All', 'BBS', 'Vossen', 'Rays', 'Enkei', 'HRE', 'OZ Racing'];
+  const sizes = ['All', '17"', '18"', '19"', '20"', '21"', '22"'];
 
-  const handleApplyFilter = () => { setFilterVisible(false); };
-  const handleResetFilter = () => { setSelectedCategory(t.all_category); setSelectedSize(t.all_category); };
+  const handleApplyFilter = () => {
+    // ตอนนี้เป็นเพียง UI mock ตามดีไซน์
+    // สามารถเพิ่ม logic filter จริงภายหลังได้
+    setFilterVisible(false);
+  };
+
+  const handleResetFilter = () => {
+    setSelectedCategory('All');
+    setSelectedBrand('All');
+    setSelectedSize('All');
+    setMinPrice('0');
+    setMaxPrice('999');
+  };
 
   const renderItem = ({ item }: { item: Wheel }) => (
     <TouchableOpacity
@@ -111,41 +126,108 @@ const HomeScreen = () => {
       />
 
       {/* Filter Modal */}
-      <Modal animationType="slide" transparent={true} visible={isFilterVisible} onRequestClose={() => setFilterVisible(false)}>
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isFilterVisible}
+        onRequestClose={() => setFilterVisible(false)}
+      >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContainer, { backgroundColor: theme.card }]}>
-            <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
-                <Text style={[styles.modalTitle, { color: theme.text }]}>{t.filter}</Text>
-                <TouchableOpacity onPress={() => setFilterVisible(false)}>
-                    <Icon name="close" size={24} color={theme.subText} />
-                </TouchableOpacity>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={[styles.sectionTitle, { color: theme.text }]}>Category</Text>
-                <View style={styles.chipContainer}>
-                    {categories.map((cat) => (
-                        <TouchableOpacity 
-                          key={cat} 
-                          style={[
-                            styles.chip, 
-                            { backgroundColor: isDarkMode ? '#334155' : '#F8F9FA', borderColor: theme.border },
-                            selectedCategory === cat && styles.chipActive
-                          ]} 
-                          onPress={() => setSelectedCategory(cat)}
-                        >
-                            <Text style={[styles.chipText, selectedCategory === cat && styles.chipTextActive]}>{cat}</Text>
-                        </TouchableOpacity>
-                    ))}
+          <View style={[styles.modalContainer, { backgroundColor: theme.background }]}>
+            {/* ชื่อหัวข้อใหญ่ตรงกลางเหมือนดีไซน์ตัวอย่าง */}
+            <Text style={[styles.filterTitle, { color: theme.text }]}>
+              Filter
+            </Text>
+
+            {/* การ์ดด้านในสำหรับตัวเลือก Category / Brand / Size / Price */}
+            <View style={[styles.filterCard, { backgroundColor: theme.card }]}>
+              {/* Category */}
+              <TouchableOpacity
+                style={[styles.filterRow, { borderBottomColor: theme.border }]}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.filterLabel, { color: theme.text }]}>Category</Text>
+                <View style={styles.filterRowRight}>
+                  <Text style={[styles.filterValue, { color: theme.subText }]}>
+                    {selectedCategory}
+                  </Text>
+                  <Icon name="chevron-right" size={20} color={theme.subText} />
                 </View>
-                {/* ... (ทำแบบเดียวกันกับ Size) ... */}
-            </ScrollView>
-            <View style={styles.modalFooter}>
-                <TouchableOpacity style={[styles.resetButton, { borderColor: theme.border }]} onPress={handleResetFilter}>
-                    <Text style={[styles.resetButtonText, { color: theme.subText }]}>Reset</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.applyButton} onPress={handleApplyFilter}>
-                    <Text style={styles.applyButtonText}>Apply</Text>
-                </TouchableOpacity>
+              </TouchableOpacity>
+
+              {/* Brand */}
+              <TouchableOpacity
+                style={[styles.filterRow, { borderBottomColor: theme.border }]}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.filterLabel, { color: theme.text }]}>Brand</Text>
+                <View style={styles.filterRowRight}>
+                  <Text style={[styles.filterValue, { color: theme.subText }]}>
+                    {selectedBrand}
+                  </Text>
+                  <Icon name="chevron-right" size={20} color={theme.subText} />
+                </View>
+              </TouchableOpacity>
+
+              {/* Size */}
+              <TouchableOpacity
+                style={[styles.filterRow, { borderBottomColor: theme.border }]}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.filterLabel, { color: theme.text }]}>Size</Text>
+                <View style={styles.filterRowRight}>
+                  <Text style={[styles.filterValue, { color: theme.subText }]}>
+                    {selectedSize}
+                  </Text>
+                  <Icon name="chevron-right" size={20} color={theme.subText} />
+                </View>
+              </TouchableOpacity>
+
+              {/* Price Range */}
+              <View style={styles.priceRow}>
+                <View style={[styles.priceInputWrapper, { borderColor: theme.border }]}>
+                  <TextInput
+                    value={minPrice}
+                    onChangeText={setMinPrice}
+                    keyboardType="numeric"
+                    style={styles.priceInput}
+                    placeholder="$ 0"
+                    placeholderTextColor={theme.subText}
+                  />
+                </View>
+                <Text style={[styles.priceSeparator, { color: theme.subText }]}>-</Text>
+                <View style={[styles.priceInputWrapper, { borderColor: theme.border }]}>
+                  <TextInput
+                    value={maxPrice}
+                    onChangeText={setMaxPrice}
+                    keyboardType="numeric"
+                    style={styles.priceInput}
+                    placeholder="$ 999"
+                    placeholderTextColor={theme.subText}
+                  />
+                </View>
+              </View>
+            </View>
+
+            {/* ปุ่มด้านล่างสองข้าง "Clear All" */}
+            <View style={styles.modalButtonsRow}>
+              <TouchableOpacity
+                style={[styles.clearOutlineButton, { borderColor: '#2563EB' }]}
+                onPress={handleResetFilter}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.clearOutlineText, { color: '#2563EB' }]}>
+                  Clear All
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.clearSolidButton, { backgroundColor: '#2563EB' }]}
+                onPress={handleApplyFilter}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.clearSolidText}>Clear All</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -187,21 +269,102 @@ const styles = StyleSheet.create({
   cardPrice: { fontSize: 15, fontWeight: 'bold', color: '#2563EB', marginBottom: 2 },
   cardCategory: { fontSize: 11, color: '#94A3B8' },
   
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContainer: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '80%' },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, paddingBottom: 15 },
-  modalTitle: { fontSize: 20, fontWeight: 'bold' },
-  sectionTitle: { fontSize: 16, fontWeight: '700', marginTop: 10, marginBottom: 12 },
-  chipContainer: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 20 },
-  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12, borderWidth: 1, marginRight: 10, marginBottom: 10 },
-  chipActive: { backgroundColor: '#EFF6FF', borderColor: '#2563EB' },
-  chipText: { fontSize: 14, color: '#64748B' },
-  chipTextActive: { color: '#2563EB', fontWeight: '600' },
-  modalFooter: { flexDirection: 'row', marginTop: 20, paddingTop: 10 },
-  resetButton: { flex: 1, paddingVertical: 15, marginRight: 10, justifyContent: 'center', alignItems: 'center', borderRadius: 12, borderWidth: 1 },
-  resetButtonText: { fontWeight: '600', fontSize: 16 },
-  applyButton: { flex: 2, paddingVertical: 15, justifyContent: 'center', alignItems: 'center', borderRadius: 12, backgroundColor: '#2563EB' },
-  applyButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '88%',
+    borderRadius: 24,
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+  },
+  filterTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  filterCard: {
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  filterLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  filterRowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterValue: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 16,
+  },
+  priceInputWrapper: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+  },
+  priceInput: {
+    fontSize: 14,
+  },
+  priceSeparator: {
+    marginHorizontal: 12,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalButtonsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+  },
+  clearOutlineButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    backgroundColor: '#E5EDFF',
+  },
+  clearOutlineText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  clearSolidButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+  clearSolidText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#fff',
+  },
 });
 
 export default HomeScreen;

@@ -1,12 +1,14 @@
+// src/context/AuthContext.tsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Alert } from 'react-native';
-import { authService } from '../services/authService'; // เรียก service
+import { authService } from '../services/authService';
 import { 
   setToken, getToken, removeToken, 
   setUserData as setStorageUser, getUserData, removeUserData 
-} from '../utils/storage'; // เรียก MMKV storage
+} from '../utils/storage';
 
-export type UserRole = 'visitor' | 'user' | 'admin' | null;
+// ✅ เพิ่ม role 'store' ให้ครบตามระบบจริง
+export type UserRole = 'visitor' | 'user' | 'store' | 'admin' | null;
 
 interface AuthContextType {
   userRole: UserRole;
@@ -32,8 +34,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const savedUser = getUserData();
       if (token && savedUser) {
         setUserData(savedUser);
-        // เช็คว่า backend ส่ง role มาไหม ถ้าไม่มีให้ default เป็น user
-        setUserRole(savedUser.role || 'user'); 
+        // ถ้า backend ส่ง role มา: 'visitor' | 'user' | 'store' | 'admin'
+        // ถ้าไม่มี ให้ default = 'user'
+        setUserRole(savedUser.role || 'user');
       }
     };
     checkLogin();
@@ -43,27 +46,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (emailOrUser: string, pass: string) => {
     setIsLoading(true);
     try {
-      // เรียก API ผ่าน Service
       const response = await authService.login(emailOrUser, pass);
-      
-      // สมมติโครงสร้างตามที่คุยกัน { access_token, user }
       const { access_token, user } = response.data;
 
-      if (access_token) {
-        // บันทึกลงเครื่อง
-        setToken(access_token);
-        setStorageUser(user);
-
-        // อัปเดต State
-        setUserData(user);
-        setUserRole(user.role || 'user'); // ถ้า admin จะได้ role: 'admin'
-      } else {
+      if (!access_token) {
         throw new Error('No access token received');
       }
 
+      // บันทึกลงเครื่อง
+      setToken(access_token);
+      setStorageUser(user);
+
+      // อัปเดต State
+      setUserData(user);
+      setUserRole(user.role || 'user');
     } catch (error: any) {
       console.error('Login Error:', error);
-      const msg = error.response?.data?.message || 'Invalid email or password';
+      const msg = error?.response?.data?.message || 'Invalid email or password';
       Alert.alert('Login Failed', msg);
     } finally {
       setIsLoading(false);
@@ -73,14 +72,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const loginAsVisitor = () => {
     setIsLoading(true);
     setTimeout(() => {
-        setUserRole('visitor');
-        setUserData(null);
-        setIsLoading(false);
+      setUserRole('visitor');
+      setUserData(null);
+      setIsLoading(false);
     }, 500);
   };
 
   const logout = () => {
-    // ลบข้อมูลออกจากเครื่องและ State
     removeToken();
     removeUserData();
     setUserRole(null);
@@ -90,21 +88,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const updateProfile = (newData: any) => {
     setUserData((prev: any) => {
       const updated = { ...prev, ...newData };
-      setStorageUser(updated); // อัปเดตลงเครื่องด้วย
+      setStorageUser(updated);
       return updated;
     });
   };
 
   return (
-    <AuthContext.Provider value={{ 
-        userRole, 
-        isLoading, 
-        login, 
-        loginAsVisitor, 
-        logout, 
-        userData, 
-        updateProfile 
-    }}>
+    <AuthContext.Provider
+      value={{
+        userRole,
+        isLoading,
+        login,
+        loginAsVisitor,
+        logout,
+        userData,
+        updateProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

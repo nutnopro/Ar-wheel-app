@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
-  Image, 
-  ScrollView, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  ScrollView,
   ActivityIndicator,
   Alert
 } from 'react-native';
@@ -15,11 +15,13 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 
+import Header from '../../components/Header';
+
 const EditProfileScreen = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
   const { userData, updateProfile } = useAuth();
-  
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -53,8 +55,9 @@ const EditProfileScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Header title="Edit Profile" />
       <ScrollView contentContainerStyle={styles.content}>
-        
+
         {/* Avatar Edit Section */}
         <View style={styles.avatarContainer}>
           <Image source={{ uri: userData?.avatar }} style={styles.avatar} />
@@ -106,8 +109,8 @@ const EditProfileScreen = () => {
         </View>
 
         {/* Save Button */}
-        <TouchableOpacity 
-          style={styles.saveButton} 
+        <TouchableOpacity
+          style={styles.saveButton}
           onPress={handleSave}
           disabled={loading}
         >

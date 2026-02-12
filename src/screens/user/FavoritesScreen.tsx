@@ -7,12 +7,14 @@ import { useTheme } from '../../context/ThemeContext'; // เรียกใช�
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = width / 2 - 24;
 
+import Header from '../../components/Header'; // Import Header
+
 const FavoritesScreen = () => {
   const navigation = useNavigation<any>();
   const { theme } = useTheme();
 
   // จำลองว่า User กด Favorite สินค้า 2 ตัวแรกไว้
-  const favoriteItems = MOCK_WHEELS.slice(0, 2); 
+  const favoriteItems = MOCK_WHEELS.slice(0, 2);
 
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity
@@ -33,6 +35,7 @@ const FavoritesScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Header title="Favorites" />
       <FlatList
         data={favoriteItems}
         renderItem={renderItem}

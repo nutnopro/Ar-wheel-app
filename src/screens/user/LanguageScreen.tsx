@@ -4,17 +4,19 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 
+import Header from '../../components/Header';
+
 const LanguageScreen = () => {
   const { theme } = useTheme();
   const { language, changeLanguage, t } = useLanguage();
 
   const LanguageOption = ({ langCode, label, flag }: any) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[
-        styles.option, 
-        { 
-          backgroundColor: theme.card, 
-          borderColor: language === langCode ? '#2563EB' : theme.border 
+        styles.option,
+        {
+          backgroundColor: theme.card,
+          borderColor: language === langCode ? '#2563EB' : theme.border
         }
       ]}
       onPress={() => changeLanguage(langCode)}
@@ -23,11 +25,11 @@ const LanguageScreen = () => {
       <View style={styles.left}>
         {/* ใส่ Icon ธง หรือตัวอักษรย่อก็ได้ */}
         <View style={styles.flagBox}>
-            <Text style={styles.flagText}>{flag}</Text>
+          <Text style={styles.flagText}>{flag}</Text>
         </View>
         <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
       </View>
-      
+
       {language === langCode && (
         <Icon name="check-circle" size={24} color="#2563EB" />
       )}
@@ -36,18 +38,19 @@ const LanguageScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <Header title={t.select_language} />
       <Text style={[styles.headerTitle, { color: theme.subText }]}>{t.select_language}</Text>
-      
-      <LanguageOption 
-        langCode="en" 
-        label={t.lang_english} 
-        flag="EN" 
+
+      <LanguageOption
+        langCode="en"
+        label={t.lang_english}
+        flag="EN"
       />
-      
-      <LanguageOption 
-        langCode="th" 
-        label={t.lang_thai} 
-        flag="TH" 
+
+      <LanguageOption
+        langCode="th"
+        label={t.lang_thai}
+        flag="TH"
       />
     </View>
   );

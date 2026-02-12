@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -21,13 +22,13 @@ const SplashScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* วงกลม Logo */}
+      {/* วงกลม Logo ล้อรถ */}
       <View style={styles.logoCircle}>
-        <Text style={styles.logoText}>Logo</Text>
+        <Icon name="steering" size={60} color={COLORS.primary} />
       </View>
       
       {/* ชื่อแอป */}
-      <Text style={styles.appName}>App Name</Text>
+      <Text style={styles.appName}>Wheel AR</Text>
     </View>
   );
 };
@@ -53,11 +54,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
-  },
-  logoText: {
-    fontSize: 24,
-    color: '#333',
-    fontWeight: '300',
   },
   appName: {
     fontSize: 28,

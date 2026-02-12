@@ -3,6 +3,8 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../../context/ThemeContext';
 
+import Header from '../../components/Header';
+
 const ManageStoresScreen = () => {
   const { theme } = useTheme();
   const [stores, setStores] = useState([
@@ -16,25 +18,26 @@ const ManageStoresScreen = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <FlatList 
-        data={stores} 
-        keyExtractor={item => item.id} 
+      <Header title="Manage Stores" />
+      <FlatList
+        data={stores}
+        keyExtractor={item => item.id}
         contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
         renderItem={({ item }) => {
-            const isDeleted = item.status === 'Deleted';
-            return (
-              <View style={[styles.card, { backgroundColor: theme.card, opacity: isDeleted ? 0.6 : 1 }]}>
-                <View style={[styles.iconBox, { backgroundColor: '#ECFDF5' }]}><Icon name="store" size={24} color="#10B981" /></View>
-                <View style={{ flex: 1 }}>
-                   <Text style={[styles.title, { color: theme.text, textDecorationLine: isDeleted ? 'line-through' : 'none' }]}>{item.name}</Text>
-                   <Text style={{ color: theme.subText }}>{item.location}</Text>
-                </View>
-                <View style={styles.actions}>
-                   <TouchableOpacity onPress={() => Alert.alert('Edit', item.name)} disabled={isDeleted} style={styles.actionBtn}><Icon name="pencil-outline" size={24} color={isDeleted ? theme.subText : "#3B82F6"} /></TouchableOpacity>
-                   <TouchableOpacity onPress={() => handleDelete(item.id)} disabled={isDeleted} style={styles.actionBtn}><Icon name="trash-can-outline" size={24} color={isDeleted ? theme.subText : "#EF4444"} /></TouchableOpacity>
-                </View>
+          const isDeleted = item.status === 'Deleted';
+          return (
+            <View style={[styles.card, { backgroundColor: theme.card, opacity: isDeleted ? 0.6 : 1 }]}>
+              <View style={[styles.iconBox, { backgroundColor: '#ECFDF5' }]}><Icon name="store" size={24} color="#10B981" /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.title, { color: theme.text, textDecorationLine: isDeleted ? 'line-through' : 'none' }]}>{item.name}</Text>
+                <Text style={{ color: theme.subText }}>{item.location}</Text>
               </View>
-            );
+              <View style={styles.actions}>
+                <TouchableOpacity onPress={() => Alert.alert('Edit', item.name)} disabled={isDeleted} style={styles.actionBtn}><Icon name="pencil-outline" size={24} color={isDeleted ? theme.subText : "#3B82F6"} /></TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item.id)} disabled={isDeleted} style={styles.actionBtn}><Icon name="trash-can-outline" size={24} color={isDeleted ? theme.subText : "#EF4444"} /></TouchableOpacity>
+              </View>
+            </View>
+          );
         }}
       />
       <View style={[styles.footer, { backgroundColor: theme.card, borderTopColor: theme.border }]}>

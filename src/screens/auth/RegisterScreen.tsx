@@ -78,6 +78,13 @@ const RegisterScreen = () => {
           <Icon name="chevron-left" size={40} color={COLORS.primary} />
         </TouchableOpacity>
 
+        {/* โลโก้ล้อรถให้ตรงกับ Splash/Login */}
+        <View style={styles.logoWrapper}>
+          <View style={styles.logoCircle}>
+            <Icon name="steering" size={40} color={COLORS.primary} />
+          </View>
+        </View>
+
         <Text style={styles.title}>New Account</Text>
 
         <CustomInput
@@ -157,6 +164,19 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
   scrollContainer: { flexGrow: 1, backgroundColor: COLORS.white },
   container: { flex: 1, padding: 24, paddingTop: 20 },
+  logoWrapper: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  logoCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#EFF6FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
   backButton: {
     alignSelf: 'flex-start',
     marginLeft: -10,
