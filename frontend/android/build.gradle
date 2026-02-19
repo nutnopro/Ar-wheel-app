@@ -1,0 +1,21 @@
+buildscript {
+    ext {
+        buildToolsVersion = "34.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 34
+        targetSdkVersion = 34
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.1.20"
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // ต้องมี :8.3.1 ต่อท้ายตรงนี้ครับ ไม่งั้นมันจะไปดึงตัวล่าสุดมาแล้ว Error
+        classpath("com.android.tools.build:gradle:8.3.1")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    }
+}
+apply plugin: "com.facebook.react.rootproject"

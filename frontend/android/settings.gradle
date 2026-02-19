@@ -1,0 +1,14 @@
+pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+
+plugins {
+    id("com.facebook.react.settings")
+    // แก้ตรงนี้ครับ เปลี่ยนจาก 0.8.0 เป็น 0.5.0
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
+}
+
+// ... บรรทัดอื่นๆ เหมือนเดิม ...
+
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+rootProject.name = 'ArWheelFrontend'
+include ':app'
+includeBuild('../node_modules/@react-native/gradle-plugin')
